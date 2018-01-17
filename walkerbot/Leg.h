@@ -1,10 +1,21 @@
-#include <Servo.h>
-
 class Leg {
+
+  /*
+  Legs are defined in their own class, for maximum parallelism.
+  They will always be called to move in the order they are
+  defined so as to avoid unbalancing the robot
+  Each one consists of 3 servos, addressed from top to bottom
+  0 is all the way forward, 180 is all the way backwards (but
+  generally avoid extreme values because the servos are less
+  reliable towards their limits
+  */
   Servo hip;
   Servo knee;
   Servo ankle;
 
+  // settable limits, the servo will not move past these
+  // use them to prevent the servo burning out trying to force
+  // parts into each other
   int hipLowerLimit;
   int hipUpperLimit;
   int kneeLowerLimit;
@@ -12,32 +23,17 @@ class Leg {
   int ankleLowerLimit;
   int ankleUpperLimit;
 
-  int hipCurrentAngle;
-  int kneeCurrentAngle;
-  int ankleCurrentAngle;
-
+  // motion is achieved by setting a target,
+  // then incrementing the current angle by moveSpeed degrees
   int hipTargetAngle;
   int kneeTargetAngle;
   int ankleTargetAngle;
 
   int moveSpeed;
 
-public:
-  Leg(int hipPort, int kneePort, int anklePort, int hipLowerLimit=0, int hipUpperLimit=180, int kneeLowerLimit=0, int kneeUpperLimit=180, int ankleLowerLimit=0, int ankleUpperLimit=180, int moveSpeed=1) {
-    // constructor
-    hip = Servo(hipPort);
-    knee = Servo(kneePort);
-    ankle = Servo(anklePort);
-
-    hipCurrentAngle = hip.read();
-    kneeCurrentAngle = knee.read();
-    ankleCurrentAngle = ankle.read();
-
-    hipTargetAngle = hipCurrentAngle;
-    kneeTargetAngle = kneeCurrentAngle;
-    ankleTargetAngle = ankleCurrentAngle;
-
-  };
+  int hipCurrentAngle;
+  int kneeCurrentAngle;
+  int ankleCurrentAngle;
 
   void moveHip() {
     if (hipCurrentAngle < hipTargetAngle) {
@@ -60,7 +56,7 @@ public:
         hipCurrentAngle = hipTargetAngle;
       }
     }
-  }
+  };
 
   void moveKnee() {
     if (kneeCurrentAngle < kneeTargetAngle) {
@@ -83,7 +79,7 @@ public:
         kneeCurrentAngle = kneeTargetAngle;
       }
     }
-  }
+  };
 
   void moveAnkle() {
     if (ankleCurrentAngle < ankleTargetAngle) {
@@ -106,15 +102,35 @@ public:
         ankleCurrentAngle = ankleTargetAngle;
       }
     }
-  }
+  };
 
-  void move() {
-    this.moveHip();
-    this.moveKnee();
-    this.moveAnkle();
-  }
 
-  void turnTo(int hipAngle, int kneeAngle, int ankleAngle) {
+public:
+  Leg(int hipPort, int kneePort, int anklePort, int hipLowerLimit=0, int hipUpperLimit=180, int kneeLowerLimit=0, int kneeUpperLimit=180, int ankleLowerLimit=0, int ankleUpperLimit=180, int moveSpeed=1) {
+    // the constructor - note the many optional args
+    hip.attach(hipPort);
+    knee.attach(kneePort);
+    ankle.attach(anklePort);
+
+    hipCurrentAngle = hip.read();
+    kneeCurrentAngle = knee.read();
+    ankleCurrentAngle = ankle.read();
+
+    hipTargetAngle = hipCurrentAngle;
+    kneeTargetAngle = kneeCurrentAngle;
+    ankleTargetAngle = ankleCurrentAngle;
+
+  };
+
+  void moveJoints() {
+    // increment all joints
+    this -> moveHip();
+    this -> moveKnee();
+    this -> moveAnkle();
+  };
+
+  void setTargets(int hipAngle, int kneeAngle, int ankleAngle) {
+    // set target angles for all joints
     if (hipAngle >= hipLowerLimit) {
       if (hipAngle <= hipUpperLimit) {
         hipTargetAngle = hipAngle;
@@ -153,7 +169,7 @@ public:
 
   };
 
-  Boolean isReady() {
+  boolean isReady() {
     if (hipCurrentAngle == hipTargetAngle) {
       if (kneeCurrentAngle == kneeTargetAngle) {
         if (ankleCurrentAngle == ankleTargetAngle) {
@@ -163,34 +179,34 @@ public:
     }
 
     return false;
-  }
+  };
 
   void collapse() {
-    this.move(0,180,0);
+    this -> setTargets(0,180,0);
   };
 
   void collapseInverse() {
-    this.move(180,0,180);
+    this -> setTargets(180,0,180);
   };
 
   void straighten() {
-    this.move(90,90,90);
+    this -> setTargets(90,90,90);
   };
 
-  void setMoveSpeed(int speed) {
-    moveSpeed = speed;
-  }
+  void setMoveSpeed(int spd) {
+    moveSpeed = spd;
+  };
 
   void setHipPort(int port) {
-    hip = Servo(port);
+    hip.attach(port);
   };
 
   void setKneePort(int port) {
-    knee = Servo(port);
+    knee.attach(port);
   };
 
   void setAnklePort(int port) {
-    ankle = Servo(port);
+    ankle.attach(port);
   };
 
   void setHipLowerLimit(int limit) {

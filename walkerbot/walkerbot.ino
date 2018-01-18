@@ -78,13 +78,6 @@ void creepBeat(Leg lift, Leg front, Leg center, Leg rear) {
   // set lifted leg down, all other legs continue moving backwards
   moveTo(lift, 0,30,90, front, 0,0,0, center, 0,0,0, rear, 120,90,90);
 
-  // cycle state for different leg order
-  if (globalState < 3) {
-    globalState++;
-  }
-  else {
-    globalState = 0;
-  }
 }
 
 
@@ -173,6 +166,14 @@ void loop() {
         case 3:
           creepBeat(frontLeft, rearLeft, frontRight, rearRight);
           break;
+      }
+
+      // cycle state for different leg order
+      if (globalState < 3) {
+        globalState++;
+      }
+      else {
+        globalState = 0;
       }
   }
 }
